@@ -77,8 +77,6 @@
                     
                     const { month, day } = m3.groups;
 
-                    console.log(`DAY: ${day}\n`);
-
                     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
                     let monthIndex = months.indexOf(month);
 
@@ -133,7 +131,11 @@
 
                     console.log(`Name: ${name} Date: ${date} Time: ${time} Description: ${description}`);
 
-                    events = events.concat(`${escapeCsvChars(name,'"', ',')},${parsedDate.toLocaleDateString("en-US", {year: "numeric", month: "2-digit", day: "2-digit"})},${start_time_ampm},${parsedDate.toLocaleDateString("en-US", {year: "numeric", month: "2-digit", day: "2-digit"})},${end_time_ampm},False,${escapeCsvChars(description,'"', ',')},,False\r\n`);
+                    let parsedEndDate = new Date(parsedDate);
+                    if (end_time_ampm == "12:00 AM") {
+                        parsedEndDate.setDate(parsedEndDate.getDate() + 1);
+                    }
+                    events = events.concat(`${escapeCsvChars(name,'"', ',')},${parsedDate.toLocaleDateString("en-US", {year: "numeric", month: "2-digit", day: "2-digit"})},${start_time_ampm},${parsedEndDate.toLocaleDateString("en-US", {year: "numeric", month: "2-digit", day: "2-digit"})},${end_time_ampm},False,${escapeCsvChars(description,'"', ',')},,False\r\n`);
                 }
             }
 
