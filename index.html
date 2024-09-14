@@ -1,0 +1,145 @@
+<!doctype html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Metin2 English Forum Events to CSV Calendar</title>
+</head>
+
+<body>
+    <form onsubmit="convert()">
+        <input type="submit" value="Convert to CSV Calendar"></input>
+        <br><br>
+        <textarea id="textarea-events" required placeholder="Enter Metin2 English Forum Events (without additional lines)" rows="50" cols="50"></textarea>
+    </form>
+
+    <script>
+        const download = (data) => {
+            // Create a Blob with the CSV data and type
+            const blob = new Blob([data], { type: 'text/csv' });
+            
+            // Create a URL for the Blob
+            const url = URL.createObjectURL(blob);
+            
+            // Create an anchor tag for downloading
+            const a = document.createElement('a');
+            
+            // Set the URL and download attribute of the anchor tag
+            a.href = url;
+            a.download = 'metin2-events.csv';
+            
+            // Trigger the download by clicking the anchor tag
+            a.click();
+        }                
+        function escapeCsvChars(inputText, escapeCharacter, delimiter) {
+            let outputText = inputText;
+
+            // If escape character is included it must be escaped by doubling it
+            if(inputText.includes(escapeCharacter)) {
+                outputText = outputText.replaceAll(escapeCharacter, escapeCharacter+escapeCharacter);
+            }
+
+            /*
+            * Complete line must be double quoted if it includes an Escape character or a delimiter character
+            */
+            if(inputText.includes(delimiter) || inputText.includes(escapeCharacter)) {
+                outputText = `"${outputText}"`;
+            }
+
+            return outputText;
+        }
+        function convert() {
+            const regex = /(?<date>(January|February|March|April|May|June|July|August|September|October|November|December) \d+(st|rd|nd|th))\n(?<dailyevents>(\n|.)+?)(\n\n\n|$(?![\r\n]))/gm;
+
+            let events = "Subject,Start Date,Start Time,End Date,End Time,All Day Event,Description,Location,Private\r\n";
+            let str = document.getElementById("textarea-events").value;
+            let m;
+            while ((m = regex.exec(str)) !== null) {
+                // This is necessary to avoid infinite loops with zero-width matches
+                if (m.index === regex.lastIndex) {
+                    regex.lastIndex++;
+                }
+                
+                const { date, dailyevents } = m.groups;
+
+                const regex3 = /(?<month>January|February|March|April|May|June|July|August|September|October|November|December) (?<day>\d+)(st|rd|nd|th)/gm;
+
+                const str3 = date;
+                let m3;
+                let parsedDate;
+
+                while ((m3 = regex3.exec(str3)) !== null) {
+                    // This is necessary to avoid infinite loops with zero-width matches
+                    if (m3.index === regex3.lastIndex) {
+                        regex3.lastIndex++;
+                    }
+                    
+                    const { month, day } = m3.groups;
+
+                    console.log(`DAY: ${day}\n`);
+
+                    let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                    let monthIndex = months.indexOf(month);
+
+                    parsedDate = new Date(new Date().getUTCFullYear(), monthIndex, day);
+                }
+
+
+                const regex2 = /((Power Mounts Drop: |Drop: |Event ?1?: )(?<name>.+)\nTime ?: (?<time>.+)\n(Information: (?<info>.+))?)/gm;
+
+                let str2 = dailyevents;
+                let m2;
+                while ((m2 = regex2.exec(str2)) !== null) {
+                    // This is necessary to avoid infinite loops with zero-width matches
+                    if (m2.index === regex2.lastIndex) {
+                        regex2.lastIndex++;
+                    }
+
+                    const { name, time, info } = m2.groups;
+
+                    let start_time_ampm = "";
+                    let end_time_ampm = "";
+                    const regex4 = /(?<start_time>[\d:]+)( - | to | CES?T)(?<end_time>[\d:]+)*/gm;
+
+                    const str4 = time;
+                    let m4;
+
+                    while ((m4 = regex4.exec(str4)) !== null) {
+                        // This is necessary to avoid infinite loops with zero-width matches
+                        if (m4.index === regex4.lastIndex) {
+                            regex4.lastIndex++;
+                        }
+                        
+                        let { start_time, end_time } = m4.groups;
+
+
+                        if (start_time != undefined) {    
+                            if (start_time.length < 5)
+                                start_time = "0" + start_time;
+                            start_time_ampm = new Date('1970-01-01T' + start_time + ":00" + 'Z').toLocaleTimeString('en-US',{timeZone:'UTC',hour12:true,hour:'numeric',minute:'numeric'})
+                        }
+                        if (end_time != undefined) {
+                            if (end_time.length < 5)
+                                end_time = "0" + end_time;
+                            end_time_ampm = new Date('1970-01-01T' + end_time + ":00" + 'Z').toLocaleTimeString('en-US',{timeZone:'UTC',hour12:true,hour:'numeric',minute:'numeric'})
+                        }
+                    }
+
+                    let description = "";
+                    if (info != undefined) {
+                        description = info;
+                    }
+
+                    console.log(`Name: ${name} Date: ${date} Time: ${time} Description: ${description}`);
+
+                    events = events.concat(`${escapeCsvChars(name,'"', ',')},${parsedDate.toLocaleDateString("en-US", {year: "numeric", month: "2-digit", day: "2-digit"})},${start_time_ampm},${parsedDate.toLocaleDateString("en-US", {year: "numeric", month: "2-digit", day: "2-digit"})},${end_time_ampm},False,${escapeCsvChars(description,'"', ',')},,False\r\n`);
+                }
+            }
+
+            download(events);
+        }
+    </script>
+</body>
+
+</html>
