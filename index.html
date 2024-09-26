@@ -98,7 +98,7 @@
 
                     let start_time_ampm = "";
                     let end_time_ampm = "";
-                    const regex4 = /(?<start_time>[\d:]+)( - | to | CES?T)(?<end_time>[\d:]+)*/gm;
+                    const regex4 = /(?<start_time>[\d:]+).*?( - | to | CES?T)(?<end_time>[\d:]+)*/gm;
 
                     const str4 = time;
                     let m4;
