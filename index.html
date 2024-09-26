@@ -50,7 +50,7 @@
             return outputText;
         }
         function convert() {
-            const regex = /(?<date>(January|February|March|April|May|June|July|August|September|October|November|December).*\d+(st|rd|nd|th)?)\n(?<dailyevents>(\n|.)+?)(\n\n\n|$(?![\r\n]))/gm;
+            const regex = /(?<date>(January|February|March|April|May|June|July|August|September|October|November|December).*?\d+(st|rd|nd|th)?)\n(?<dailyevents>(\n|.)+?)(\n\n\n|$(?![\r\n]))/gm;
 
             let events = "Subject,Start Date,Start Time,End Date,End Time,All Day Event,Description,Location,Private\r\n";
             let str = document.getElementById("textarea-events").value;
@@ -63,7 +63,7 @@
                 
                 const { date, dailyevents } = m.groups;
 
-                const regex3 = /(?<month>January|February|March|April|May|June|July|August|September|October|November|December).*(?<day>\d+)(st|rd|nd|th)?/gm;
+                const regex3 = /(?<month>January|February|March|April|May|June|July|August|September|October|November|December).*?(?<day>\d+)(st|rd|nd|th)?/gm;
 
                 const str3 = date;
                 let m3;
